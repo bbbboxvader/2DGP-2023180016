@@ -23,7 +23,7 @@ def move_circle():
 
 def move_triangle_line(x1, y1, x2, y2):
     for i in range(101):
-        x = 0
+        x = x1 + (x2 - x1) * i / 100
         y = 0
         draw_character(x, y)
 
