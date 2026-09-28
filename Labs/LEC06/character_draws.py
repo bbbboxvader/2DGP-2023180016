@@ -8,3 +8,6 @@ character = load_image('character.png')
 
 def move_circle() :
     pass
+
+def move_rectangle():
+    pass
