@@ -22,10 +22,11 @@ def move_circle():
     pass
 
 def move_triangle_line(x1, y1, x2, y2):
-    x = 0
-    y = 0
-    draw_character(x, y)
-    
+    for i in range(101):
+        x = 0
+        y = 0
+        draw_character(x, y)
+
     pass
 
 def move_top():
@@ -67,5 +68,5 @@ def move_triangle():
 
 while True:
     #move_circle()
-    move_rectangle()
+    #move_rectangle()
     move_triangle()
