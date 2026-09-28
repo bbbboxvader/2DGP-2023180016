@@ -51,11 +51,12 @@ def move_left():
 def move_rectangle():
     move_top()
     move_right()
-    move_left()
     move_bottom()
+    move_left()
     pass
 
 def move_triangle():
+
     pass
 
 while True:
