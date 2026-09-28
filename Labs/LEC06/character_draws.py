@@ -24,19 +24,26 @@ def move_circle():
 
 def move_top():
     print('top')
-    
-    for x in range(50,750,5) :
-        draw_character(x,550)
+    for y in range(50, 550, 5):
+        draw_character(50, y)
     pass
 
 def move_bottom():
     print('bottom')
+
+
     pass
+
 def move_right():
     print('right')
+    for x in range(50,750,5) :
+        draw_character(x,550)
+    
     pass
+
 def move_left():
     print('left')
+
     pass
 
 def move_rectangle():
@@ -50,6 +57,6 @@ def move_triangle():
     pass
 
 while True:
-    move_circle()
+    #move_circle()
     move_rectangle()
     move_triangle()
