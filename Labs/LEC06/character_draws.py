@@ -18,6 +18,9 @@ def move_circle():
 
 def move_top():
     pass
+def move_bottom():
+    pass
+
 
 def move_rectangle():
     move_top()
