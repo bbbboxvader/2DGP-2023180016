@@ -22,6 +22,10 @@ def move_circle():
     pass
 
 def move_triangle_line(x1, y1, x2, y2):
+    x = 0
+    y = 0
+    draw_character(x, y)
+    
     pass
 
 def move_top():
