@@ -63,7 +63,7 @@ def move_rectangle():
     pass
 
 def move_triangle():
-    move_right()
+    move_triangle_line(50, 50, 400, 550)
     pass
 
 while True:
