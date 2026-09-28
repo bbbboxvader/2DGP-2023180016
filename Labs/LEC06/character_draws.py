@@ -22,6 +22,8 @@ def move_bottom():
     pass
 def move_right():
     pass
+def move_left():
+    pass
 
 def move_rectangle():
     move_top()
