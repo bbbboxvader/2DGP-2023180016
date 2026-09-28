@@ -9,7 +9,6 @@ running = True
 MOVE_STEP = 2.0
 FRAME_DELAY = 0.01
 
-
 def handle_events():
     global running
 
@@ -29,7 +28,6 @@ def draw_character(x, y):
     character.draw(x, y)
     update_canvas()
     delay(FRAME_DELAY)
-
 
 # 두 점 사이를 직선으로 이동하는 함수
 def move_line(start_x, start_y, end_x, end_y):
@@ -104,7 +102,6 @@ def move_triangle():
 
     print("triangle")
     return True
-
 
 while running:
     if not move_circle():
