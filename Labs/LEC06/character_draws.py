@@ -20,7 +20,8 @@ def move_top():
     pass
 def move_bottom():
     pass
-
+def move_right():
+    pass
 
 def move_rectangle():
     move_top()
