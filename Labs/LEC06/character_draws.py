@@ -14,3 +14,4 @@ def move_rectangle():
 
 def move_triangle():
     pass
+
