@@ -21,6 +21,8 @@ def move_circle():
         draw_character(x,y)
     pass
 
+def move_triangle_line(x1, y1, x2, y2):
+    pass
 
 def move_top():
     print('top')
@@ -56,7 +58,7 @@ def move_rectangle():
     pass
 
 def move_triangle():
-
+    move_right()
     pass
 
 while True:
