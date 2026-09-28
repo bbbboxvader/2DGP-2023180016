@@ -17,6 +17,10 @@ def move_circle():
     pass
 
 def move_rectangle():
+    move_top()
+    move_right()
+    move_left()
+    move_bottom()
     pass
 
 def move_triangle():
