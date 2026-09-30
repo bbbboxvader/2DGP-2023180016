@@ -15,6 +15,7 @@ FRAME_SIZE = 128
 SHEET_HEIGHT = 1280
 IDLE_ROW = 0
 IDLE_FRAME_COUNT = 6
+ACTION_DURATION = 1.0
 
 
 def frame_rect(row, column):
@@ -35,7 +36,7 @@ def main():
             DRAW_SIZE, DRAW_SIZE,
         )
         update_canvas()
-        delay(0.1)
+        delay(ACTION_DURATION / IDLE_FRAME_COUNT)
     close_canvas()
 
 
