@@ -18,6 +18,10 @@ IDLE_FRAME_COUNT = 6
 WALK_ROW = 1
 WALK_FRAME_COUNT = 8
 ACTION_DURATION = 1.0
+ACTIONS = (
+    (IDLE_ROW, IDLE_FRAME_COUNT),
+    (WALK_ROW, WALK_FRAME_COUNT),
+)
 
 
 def frame_rect(row, column):
@@ -29,16 +33,17 @@ def frame_rect(row, column):
 def main():
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     sprite_sheet = load_image('SamuraiSheet.png')
-    for frame in range(IDLE_FRAME_COUNT):
-        clear_canvas()
-        left, bottom, width, height = frame_rect(IDLE_ROW, frame)
-        sprite_sheet.clip_draw(
-            left, bottom, width, height,
-            CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2,
-            DRAW_SIZE, DRAW_SIZE,
-        )
-        update_canvas()
-        delay(ACTION_DURATION / IDLE_FRAME_COUNT)
+    for row, frame_count in ACTIONS:
+        for frame in range(frame_count):
+            clear_canvas()
+            left, bottom, width, height = frame_rect(row, frame)
+            sprite_sheet.clip_draw(
+                left, bottom, width, height,
+                CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2,
+                DRAW_SIZE, DRAW_SIZE,
+            )
+            update_canvas()
+            delay(ACTION_DURATION / frame_count)
     close_canvas()
 
 
