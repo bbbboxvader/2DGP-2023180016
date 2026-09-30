@@ -26,15 +26,16 @@ def frame_rect(row, column):
 def main():
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     sprite_sheet = load_image('SamuraiSheet.png')
-    clear_canvas()
-    left, bottom, width, height = frame_rect(IDLE_ROW, 0)
-    sprite_sheet.clip_draw(
-        left, bottom, width, height,
-        CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2,
-        DRAW_SIZE, DRAW_SIZE,
-    )
-    update_canvas()
-    delay(2)
+    for frame in range(IDLE_FRAME_COUNT):
+        clear_canvas()
+        left, bottom, width, height = frame_rect(IDLE_ROW, frame)
+        sprite_sheet.clip_draw(
+            left, bottom, width, height,
+            CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2,
+            DRAW_SIZE, DRAW_SIZE,
+        )
+        update_canvas()
+        delay(0.1)
     close_canvas()
 
 
