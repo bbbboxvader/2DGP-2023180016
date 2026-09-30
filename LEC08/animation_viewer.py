@@ -4,8 +4,10 @@ from pico2d import (
     clear_canvas,
     close_canvas,
     delay,
+    get_events,
     load_image,
     open_canvas,
+    SDL_QUIT,
     update_canvas,
 )
 
@@ -61,16 +63,25 @@ def draw_frame(sprite_sheet, action, frame):
     update_canvas()
 
 
+def should_quit():
+    return any(event.type == SDL_QUIT for event in get_events())
+
+
 def main():
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     sprite_sheet = load_image('SamuraiSheet.png')
     action_index = 0
-    while True:
+    running = True
+    while running:
         action = ACTIONS[action_index]
         for frame in range(action.frame_count):
+            if should_quit():
+                running = False
+                break
             draw_frame(sprite_sheet, action, frame)
             delay(ACTION_DURATION / action.frame_count)
-        action_index = next_action_index(action_index)
+        if running:
+            action_index = next_action_index(action_index)
     close_canvas()
 
 
