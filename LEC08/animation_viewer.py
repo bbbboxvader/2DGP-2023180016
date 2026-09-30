@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from pico2d import (
     clear_canvas,
@@ -37,7 +37,7 @@ class Animation(NamedTuple):
     frame_count: int
 
 
-ACTIONS = (
+ACTIONS: tuple[Animation, ...] = (
     Animation('Idle', IDLE_ROW, IDLE_FRAME_COUNT),
     Animation('Walk', WALK_ROW, WALK_FRAME_COUNT),
     Animation('Run', RUN_ROW, RUN_FRAME_COUNT),
@@ -45,17 +45,20 @@ ACTIONS = (
 )
 
 
-def frame_rect(row, column):
+def frame_rect(row: int, column: int) -> tuple[int, int, int, int]:
+    """Return a Pico2D clip rectangle for a top-origin sheet row."""
     left = column * FRAME_SIZE
     bottom = SHEET_HEIGHT - (row + 1) * FRAME_SIZE
     return left, bottom, FRAME_SIZE, FRAME_SIZE
 
 
-def next_action_index(current):
+def next_action_index(current: int) -> int:
+    """Advance to the next action and wrap after the final action."""
     return (current + 1) % len(ACTIONS)
 
 
-def advance_frame(action_index, frame):
+def advance_frame(action_index: int, frame: int) -> tuple[int, int]:
+    """Advance one frame, moving to the next action when necessary."""
     action = ACTIONS[action_index]
     next_frame = frame + 1
     if next_frame < action.frame_count:
@@ -63,7 +66,8 @@ def advance_frame(action_index, frame):
     return next_action_index(action_index), 0
 
 
-def draw_frame(sprite_sheet, action, frame):
+def draw_frame(sprite_sheet: Any, action: Animation, frame: int) -> None:
+    """Draw one enlarged frame at the center of the canvas."""
     clear_canvas()
     left, bottom, width, height = frame_rect(action.row, frame)
     sprite_sheet.clip_draw(
@@ -74,7 +78,8 @@ def draw_frame(sprite_sheet, action, frame):
     update_canvas()
 
 
-def should_quit():
+def should_quit() -> bool:
+    """Return True when the window closes or the user presses Escape."""
     for event in get_events():
         if event.type == SDL_QUIT:
             return True
@@ -83,7 +88,8 @@ def should_quit():
     return False
 
 
-def main():
+def main() -> None:
+    """Play every animation in order until the user exits."""
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     sprite_sheet = load_image('SamuraiSheet.png')
     action_index = 0
