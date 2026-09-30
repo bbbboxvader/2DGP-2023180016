@@ -7,6 +7,8 @@ from pico2d import (
     get_events,
     load_image,
     open_canvas,
+    SDL_KEYDOWN,
+    SDLK_ESCAPE,
     SDL_QUIT,
     update_canvas,
 )
@@ -64,7 +66,12 @@ def draw_frame(sprite_sheet, action, frame):
 
 
 def should_quit():
-    return any(event.type == SDL_QUIT for event in get_events())
+    for event in get_events():
+        if event.type == SDL_QUIT:
+            return True
+        if event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
+            return True
+    return False
 
 
 def main():
