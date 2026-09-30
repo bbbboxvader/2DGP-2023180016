@@ -3,8 +3,8 @@ from typing import NamedTuple
 from pico2d import (
     clear_canvas,
     close_canvas,
-    delay,
     get_events,
+    get_time,
     load_image,
     open_canvas,
     SDL_KEYDOWN,
@@ -54,6 +54,14 @@ def next_action_index(current):
     return (current + 1) % len(ACTIONS)
 
 
+def advance_frame(action_index, frame):
+    action = ACTIONS[action_index]
+    next_frame = frame + 1
+    if next_frame < action.frame_count:
+        return action_index, next_frame
+    return next_action_index(action_index), 0
+
+
 def draw_frame(sprite_sheet, action, frame):
     clear_canvas()
     left, bottom, width, height = frame_rect(action.row, frame)
@@ -78,17 +86,24 @@ def main():
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     sprite_sheet = load_image('SamuraiSheet.png')
     action_index = 0
+    frame = 0
+    frame_changed_at = get_time()
     running = True
     while running:
-        action = ACTIONS[action_index]
-        for frame in range(action.frame_count):
-            if should_quit():
-                running = False
+        if should_quit():
+            running = False
+            continue
+
+        now = get_time()
+        while True:
+            action = ACTIONS[action_index]
+            frame_duration = ACTION_DURATION / action.frame_count
+            if now - frame_changed_at < frame_duration:
                 break
-            draw_frame(sprite_sheet, action, frame)
-            delay(ACTION_DURATION / action.frame_count)
-        if running:
-            action_index = next_action_index(action_index)
+            action_index, frame = advance_frame(action_index, frame)
+            frame_changed_at += frame_duration
+
+        draw_frame(sprite_sheet, ACTIONS[action_index], frame)
     close_canvas()
 
 
