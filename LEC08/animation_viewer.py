@@ -11,14 +11,23 @@ from pico2d import (
 CANVAS_WIDTH = 640
 CANVAS_HEIGHT = 480
 DRAW_SIZE = 384
+FRAME_SIZE = 128
+SHEET_HEIGHT = 1280
+
+
+def frame_rect(row, column):
+    left = column * FRAME_SIZE
+    bottom = SHEET_HEIGHT - (row + 1) * FRAME_SIZE
+    return left, bottom, FRAME_SIZE, FRAME_SIZE
 
 
 def main():
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     sprite_sheet = load_image('SamuraiSheet.png')
     clear_canvas()
+    left, bottom, width, height = frame_rect(0, 0)
     sprite_sheet.clip_draw(
-        0, 1152, 128, 128,
+        left, bottom, width, height,
         CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2,
         DRAW_SIZE, DRAW_SIZE,
     )
