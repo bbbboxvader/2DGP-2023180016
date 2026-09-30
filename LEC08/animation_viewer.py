@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, NamedTuple
 
 from pico2d import (
@@ -29,6 +30,7 @@ RUN_FRAME_COUNT = 8
 DASH_ROW = 3
 DASH_FRAME_COUNT = 12
 ACTION_DURATION = 1.0
+SPRITE_SHEET_PATH = Path(__file__).with_name('SamuraiSheet.png')
 
 
 class Animation(NamedTuple):
@@ -91,7 +93,7 @@ def should_quit() -> bool:
 def main() -> None:
     """Play every animation in order until the user exits."""
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
-    sprite_sheet = load_image('SamuraiSheet.png')
+    sprite_sheet = load_image(str(SPRITE_SHEET_PATH))
     action_index = 0
     frame = 0
     frame_changed_at = get_time()
