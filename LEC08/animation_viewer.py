@@ -13,6 +13,8 @@ CANVAS_HEIGHT = 480
 DRAW_SIZE = 384
 FRAME_SIZE = 128
 SHEET_HEIGHT = 1280
+IDLE_ROW = 0
+IDLE_FRAME_COUNT = 6
 
 
 def frame_rect(row, column):
@@ -25,7 +27,7 @@ def main():
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     sprite_sheet = load_image('SamuraiSheet.png')
     clear_canvas()
-    left, bottom, width, height = frame_rect(0, 0)
+    left, bottom, width, height = frame_rect(IDLE_ROW, 0)
     sprite_sheet.clip_draw(
         left, bottom, width, height,
         CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2,
