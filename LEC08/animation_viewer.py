@@ -1,3 +1,5 @@
+from typing import NamedTuple
+
 from pico2d import (
     clear_canvas,
     close_canvas,
@@ -22,11 +24,19 @@ RUN_FRAME_COUNT = 8
 DASH_ROW = 3
 DASH_FRAME_COUNT = 12
 ACTION_DURATION = 1.0
+
+
+class Animation(NamedTuple):
+    name: str
+    row: int
+    frame_count: int
+
+
 ACTIONS = (
-    (IDLE_ROW, IDLE_FRAME_COUNT),
-    (WALK_ROW, WALK_FRAME_COUNT),
-    (RUN_ROW, RUN_FRAME_COUNT),
-    (DASH_ROW, DASH_FRAME_COUNT),
+    Animation('Idle', IDLE_ROW, IDLE_FRAME_COUNT),
+    Animation('Walk', WALK_ROW, WALK_FRAME_COUNT),
+    Animation('Run', RUN_ROW, RUN_FRAME_COUNT),
+    Animation('Dash', DASH_ROW, DASH_FRAME_COUNT),
 )
 
 
@@ -40,17 +50,17 @@ def main():
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     sprite_sheet = load_image('SamuraiSheet.png')
     while True:
-        for row, frame_count in ACTIONS:
-            for frame in range(frame_count):
+        for action in ACTIONS:
+            for frame in range(action.frame_count):
                 clear_canvas()
-                left, bottom, width, height = frame_rect(row, frame)
+                left, bottom, width, height = frame_rect(action.row, frame)
                 sprite_sheet.clip_draw(
                     left, bottom, width, height,
                     CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2,
                     DRAW_SIZE, DRAW_SIZE,
                 )
                 update_canvas()
-                delay(ACTION_DURATION / frame_count)
+                delay(ACTION_DURATION / action.frame_count)
     close_canvas()
 
 
