@@ -4,6 +4,7 @@ from typing import Any, NamedTuple
 from pico2d import (
     clear_canvas,
     close_canvas,
+    delay,
     get_events,
     get_time,
     load_image,
@@ -113,6 +114,7 @@ def main() -> None:
             frame_changed_at += frame_duration
 
         draw_frame(sprite_sheet, ACTIONS[action_index], frame)
+        delay(0.001)
     close_canvas()
 
 
