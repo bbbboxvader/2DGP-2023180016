@@ -142,6 +142,26 @@ ANIMATIONS += (
     ), 0.11),
 )
 
+REPEATS_PER_ANIMATION = 5
+INTER_ANIMATION_DELAY = 1.0
+
+
+@dataclass
+class PlaybackState:
+    animation_index: int = 0
+    frame_index: int = 0
+    completed_cycles: int = 0
+    wait_until: float | None = None
+
+
+def advance_frame(state: PlaybackState) -> bool:
+    animation = ANIMATIONS[state.animation_index]
+    state.frame_index += 1
+    if state.frame_index < len(animation.frames):
+        return False
+    state.frame_index = 0
+    return True
+
 
 def pico_frame_rect(frame: Frame) -> tuple[int, int, int, int]:
     """Convert a top-origin PNG rectangle to Pico2D's bottom-origin coordinates."""
