@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import isfinite
 from pathlib import Path
 from typing import Any
 
@@ -286,6 +287,8 @@ def validate_frame_bounds() -> None:
     for animation in ANIMATIONS:
         if not animation.frames:
             raise ValueError(f'{animation.name} has no frames')
+        if not isfinite(animation.frame_interval) or animation.frame_interval <= 0:
+            raise ValueError(f'{animation.name} has an invalid frame interval')
         for frame in animation.frames:
             if frame.left < 0 or frame.top < 0:
                 raise ValueError(f'{animation.name} has a negative frame origin')
