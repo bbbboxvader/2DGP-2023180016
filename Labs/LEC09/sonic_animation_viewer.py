@@ -254,6 +254,27 @@ def should_quit() -> bool:
     return False
 
 
+def main() -> None:
+    validate_frame_bounds()
+    open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
+    try:
+        sprite_sheet = load_image(str(SPRITE_SHEET_PATH))
+        state = PlaybackState(
+            next_frame_at=get_time() + ANIMATIONS[0].frame_interval,
+        )
+        while not should_quit():
+            advance_timeline(state, get_time())
+            animation = ANIMATIONS[state.animation_index]
+            draw_frame(sprite_sheet, animation, state.frame_index)
+            delay(POLL_DELAY)
+    finally:
+        close_canvas()
+
+
+if __name__ == '__main__':
+    main()
+
+
 def pico_frame_rect(frame: Frame) -> tuple[int, int, int, int]:
     """Convert a top-origin PNG rectangle to Pico2D's bottom-origin coordinates."""
     bottom = SHEET_HEIGHT - frame.top - frame.height
