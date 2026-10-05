@@ -1,10 +1,28 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from pico2d import (
+    clear_canvas,
+    close_canvas,
+    delay,
+    get_events,
+    get_time,
+    load_image,
+    open_canvas,
+    SDL_KEYDOWN,
+    SDLK_ESCAPE,
+    SDL_QUIT,
+    update_canvas,
+)
+
 
 SHEET_WIDTH = 399
 SHEET_HEIGHT = 525
 SPRITE_SHEET_PATH = Path(__file__).with_name('sonic-sprite.png')
+CANVAS_WIDTH = 640
+CANVAS_HEIGHT = 480
+CANVAS_MARGIN = 24
+POLL_DELAY = 0.001
 
 
 @dataclass(frozen=True)
@@ -207,6 +225,33 @@ def advance_timeline(state: PlaybackState, now: float) -> bool:
         if cycle_completed and record_completed_cycle(state, completed_at):
             break
     return changed
+
+
+def draw_frame(sprite_sheet: object, animation: Animation, frame_index: int) -> None:
+    frame = animation.frames[frame_index]
+    available_width = CANVAS_WIDTH - 2 * CANVAS_MARGIN
+    available_height = CANVAS_HEIGHT - 2 * CANVAS_MARGIN
+    scale = min(available_width / frame.width, available_height / frame.height)
+    draw_width = max(1, round(frame.width * scale))
+    draw_height = max(1, round(frame.height * scale))
+    clear_canvas()
+    sprite_sheet.clip_draw(
+        *pico_frame_rect(frame),
+        CANVAS_WIDTH // 2,
+        CANVAS_HEIGHT // 2,
+        draw_width,
+        draw_height,
+    )
+    update_canvas()
+
+
+def should_quit() -> bool:
+    for event in get_events():
+        if event.type == SDL_QUIT:
+            return True
+        if event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
+            return True
+    return False
 
 
 def pico_frame_rect(frame: Frame) -> tuple[int, int, int, int]:
