@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import isfinite, pi, sin
+from math import isfinite
 from pathlib import Path
 from typing import Any
 
@@ -40,8 +40,6 @@ class Animation:
     name: str
     frames: tuple[Frame, ...]
     frame_interval: float
-    movement_direction: tuple[int, int] = (0, 0)
-    jump_arc: int = 0
 
 
 ANIMATIONS = (
@@ -57,7 +55,7 @@ ANIMATIONS = (
         Frame(240, 39, 29, 38),
         Frame(270, 45, 24, 32),
         Frame(302, 51, 29, 26),
-    ), 0.08, movement_direction=(1, 0)),
+    ), 0.08),
 )
 
 ANIMATIONS += (
@@ -74,7 +72,7 @@ ANIMATIONS += (
         Frame(295, 80, 36, 37),
         Frame(334, 80, 32, 36),
         Frame(370, 79, 29, 38),
-    ), 0.075, movement_direction=(1, 0)),
+    ), 0.075),
 )
 
 ANIMATIONS += (
@@ -85,7 +83,7 @@ ANIMATIONS += (
         Frame(130, 121, 34, 42),
         Frame(181, 122, 34, 41),
         Frame(228, 122, 33, 40),
-    ), 0.09, movement_direction=(1, 0), jump_arc=96),
+    ), 0.09),
 )
 
 ANIMATIONS += (
@@ -115,7 +113,7 @@ ANIMATIONS += (
         Frame(111, 238, 31, 36),
         Frame(149, 239, 30, 35),
         Frame(186, 238, 31, 36),
-    ), 0.065, movement_direction=(1, 0)),
+    ), 0.065),
 )
 
 ANIMATIONS += (
@@ -152,7 +150,7 @@ ANIMATIONS += (
         Frame(176, 379, 33, 36),
         Frame(217, 379, 33, 36),
         Frame(254, 378, 33, 36),
-    ), 0.075, movement_direction=(1, 0)),
+    ), 0.075),
 )
 
 ANIMATIONS += (
@@ -231,59 +229,25 @@ def advance_timeline(state: PlaybackState, now: float) -> bool:
     return changed
 
 
-def animation_progress(state: PlaybackState) -> float:
-    frame_count = len(ANIMATIONS[state.animation_index].frames)
-    progress = (state.completed_cycles + state.frame_index / frame_count) / REPEATS_PER_ANIMATION
-    return min(1.0, max(0.0, progress))
-
-
-def scaled_frame_size(frame: Frame, vertical_arc: int = 0) -> tuple[int, int]:
+def scaled_frame_size(frame: Frame) -> tuple[int, int]:
     available_width = CANVAS_WIDTH - 2 * CANVAS_MARGIN
-    available_height = CANVAS_HEIGHT - 2 * CANVAS_MARGIN - 2 * vertical_arc
-    if available_height <= 0:
-        raise ValueError('vertical movement leaves no room to draw the frame')
+    available_height = CANVAS_HEIGHT - 2 * CANVAS_MARGIN
     scale = min(available_width / frame.width, available_height / frame.height)
     return max(1, round(frame.width * scale)), max(1, round(frame.height * scale))
-
-
-def frame_position(
-    animation: Animation,
-    draw_width: int,
-    draw_height: int,
-    progress: float,
-) -> tuple[int, int]:
-    progress = min(1.0, max(0.0, progress))
-    center_x = CANVAS_WIDTH // 2
-    center_y = CANVAS_HEIGHT // 2
-    direction_x, direction_y = animation.movement_direction
-
-    if direction_x:
-        left = CANVAS_MARGIN + draw_width // 2
-        right = CANVAS_WIDTH - CANVAS_MARGIN - (draw_width - draw_width // 2)
-        center_x = round(left + (right - left) * (progress if direction_x > 0 else 1 - progress))
-    if direction_y:
-        bottom = CANVAS_MARGIN + draw_height // 2
-        top = CANVAS_HEIGHT - CANVAS_MARGIN - (draw_height - draw_height // 2)
-        center_y = round(bottom + (top - bottom) * (progress if direction_y > 0 else 1 - progress))
-    if animation.jump_arc:
-        center_y += round(sin(pi * progress) * animation.jump_arc)
-    return center_x, center_y
 
 
 def draw_frame(
     sprite_sheet: Any,
     animation: Animation,
     frame_index: int,
-    progress: float = 0.5,
 ) -> None:
     frame = animation.frames[frame_index]
-    draw_width, draw_height = scaled_frame_size(frame, animation.jump_arc)
-    center_x, center_y = frame_position(animation, draw_width, draw_height, progress)
+    draw_width, draw_height = scaled_frame_size(frame)
     clear_canvas()
     sprite_sheet.clip_draw(
         *pico_frame_rect(frame),
-        center_x,
-        center_y,
+        CANVAS_WIDTH // 2,
+        CANVAS_HEIGHT // 2,
         draw_width,
         draw_height,
     )
@@ -310,12 +274,7 @@ def main() -> None:
         while not should_quit():
             advance_timeline(state, get_time())
             animation = ANIMATIONS[state.animation_index]
-            draw_frame(
-                sprite_sheet,
-                animation,
-                state.frame_index,
-                animation_progress(state),
-            )
+            draw_frame(sprite_sheet, animation, state.frame_index)
             delay(POLL_DELAY)
     finally:
         close_canvas()
