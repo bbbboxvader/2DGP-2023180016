@@ -152,6 +152,7 @@ class PlaybackState:
     frame_index: int = 0
     completed_cycles: int = 0
     wait_until: float | None = None
+    next_frame_at: float = 0.0
 
 
 def advance_frame(state: PlaybackState) -> bool:
@@ -167,6 +168,7 @@ def record_completed_cycle(state: PlaybackState, completed_at: float) -> bool:
     state.completed_cycles += 1
     if state.completed_cycles < REPEATS_PER_ANIMATION:
         return False
+    state.frame_index = len(ANIMATIONS[state.animation_index].frames) - 1
     state.wait_until = completed_at + INTER_ANIMATION_DELAY
     return True
 
@@ -178,6 +180,7 @@ def finish_inter_animation_wait(state: PlaybackState, now: float) -> bool:
     state.frame_index = 0
     state.completed_cycles = 0
     state.wait_until = None
+    state.next_frame_at = now + ANIMATIONS[state.animation_index].frame_interval
     return True
 
 
@@ -186,6 +189,24 @@ def tick_inter_animation_wait(state: PlaybackState, now: float) -> bool:
         return False
     finish_inter_animation_wait(state, now)
     return True
+
+
+def advance_timeline(state: PlaybackState, now: float) -> bool:
+    if state.wait_until is not None:
+        return finish_inter_animation_wait(state, now)
+    if now < state.next_frame_at:
+        return False
+
+    changed = False
+    while now >= state.next_frame_at and state.wait_until is None:
+        animation = ANIMATIONS[state.animation_index]
+        completed_at = state.next_frame_at
+        cycle_completed = advance_frame(state)
+        state.next_frame_at += animation.frame_interval
+        changed = True
+        if cycle_completed and record_completed_cycle(state, completed_at):
+            break
+    return changed
 
 
 def pico_frame_rect(frame: Frame) -> tuple[int, int, int, int]:
