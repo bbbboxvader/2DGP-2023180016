@@ -171,6 +171,23 @@ def record_completed_cycle(state: PlaybackState, completed_at: float) -> bool:
     return True
 
 
+def finish_inter_animation_wait(state: PlaybackState, now: float) -> bool:
+    if state.wait_until is None or now < state.wait_until:
+        return False
+    state.animation_index = next_animation_index(state.animation_index)
+    state.frame_index = 0
+    state.completed_cycles = 0
+    state.wait_until = None
+    return True
+
+
+def tick_inter_animation_wait(state: PlaybackState, now: float) -> bool:
+    if state.wait_until is None:
+        return False
+    finish_inter_animation_wait(state, now)
+    return True
+
+
 def pico_frame_rect(frame: Frame) -> tuple[int, int, int, int]:
     """Convert a top-origin PNG rectangle to Pico2D's bottom-origin coordinates."""
     bottom = SHEET_HEIGHT - frame.top - frame.height
