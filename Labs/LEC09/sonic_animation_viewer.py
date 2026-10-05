@@ -96,6 +96,17 @@ ANIMATIONS += (
     ), 0.065),
 )
 
+ANIMATIONS += (
+    Animation('Sequence 06', (
+        Frame(1, 283, 29, 35),
+        Frame(36, 283, 30, 35),
+        Frame(72, 286, 39, 31),
+        Frame(123, 285, 39, 32),
+        Frame(172, 286, 39, 31),
+        Frame(218, 285, 38, 32),
+    ), 0.085),
+)
+
 
 def pico_frame_rect(frame: Frame) -> tuple[int, int, int, int]:
     """Convert a top-origin PNG rectangle to Pico2D's bottom-origin coordinates."""
