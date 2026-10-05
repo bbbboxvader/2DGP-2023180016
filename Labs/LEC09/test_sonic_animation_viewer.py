@@ -1,4 +1,6 @@
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import sonic_animation_viewer as viewer
 
@@ -76,6 +78,51 @@ class PlaybackTimelineTests(unittest.TestCase):
             transitions.append(state.animation_index)
         expected_transitions = list(range(1, len(viewer.ANIMATIONS))) + [0]
         self.assertEqual(transitions, expected_transitions)
+
+
+class ViewerIntegrationTests(unittest.TestCase):
+    def test_all_first_frames_are_centered_and_scaled_without_distortion(self):
+        class Sprite:
+            def __init__(self):
+                self.calls = []
+
+            def clip_draw(self, *args):
+                self.calls.append(args)
+
+        sprite = Sprite()
+        with patch.object(viewer, 'clear_canvas') as clear_canvas:
+            with patch.object(viewer, 'update_canvas') as update_canvas:
+                for animation in viewer.ANIMATIONS:
+                    viewer.draw_frame(sprite, animation, 0)
+
+        self.assertEqual(len(sprite.calls), len(viewer.ANIMATIONS))
+        self.assertEqual(clear_canvas.call_count, len(viewer.ANIMATIONS))
+        self.assertEqual(update_canvas.call_count, len(viewer.ANIMATIONS))
+        for call in sprite.calls:
+            _, _, source_width, source_height, center_x, center_y, draw_width, draw_height = call
+            self.assertEqual((center_x, center_y), (viewer.CANVAS_WIDTH // 2, viewer.CANVAS_HEIGHT // 2))
+            self.assertLessEqual(draw_width, viewer.CANVAS_WIDTH - 2 * viewer.CANVAS_MARGIN)
+            self.assertLessEqual(draw_height, viewer.CANVAS_HEIGHT - 2 * viewer.CANVAS_MARGIN)
+            self.assertAlmostEqual(draw_width / draw_height, source_width / source_height, delta=0.06)
+
+    def test_window_close_and_escape_are_recognized(self):
+        close_event = SimpleNamespace(type=viewer.SDL_QUIT)
+        escape_event = SimpleNamespace(type=viewer.SDL_KEYDOWN, key=viewer.SDLK_ESCAPE)
+        with patch.object(viewer, 'get_events', return_value=[close_event]):
+            self.assertTrue(viewer.should_quit())
+        with patch.object(viewer, 'get_events', return_value=[escape_event]):
+            self.assertTrue(viewer.should_quit())
+        with patch.object(viewer, 'get_events', return_value=[]):
+            self.assertFalse(viewer.should_quit())
+
+    def test_main_closes_canvas_when_asset_loading_fails(self):
+        with patch.object(viewer, 'open_canvas') as open_canvas:
+            with patch.object(viewer, 'load_image', side_effect=FileNotFoundError):
+                with patch.object(viewer, 'close_canvas') as close_canvas:
+                    with self.assertRaises(FileNotFoundError):
+                        viewer.main()
+        open_canvas.assert_called_once_with(viewer.CANVAS_WIDTH, viewer.CANVAS_HEIGHT)
+        close_canvas.assert_called_once_with()
 
 
 if __name__ == '__main__':
