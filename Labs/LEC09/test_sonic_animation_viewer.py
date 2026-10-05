@@ -36,6 +36,18 @@ class AnimationDataTests(unittest.TestCase):
 
 
 class PlaybackTimelineTests(unittest.TestCase):
+    def test_animation_progress_tracks_cycles_and_frames(self):
+        frame_count = len(viewer.ANIMATIONS[1].frames)
+        state = viewer.PlaybackState(animation_index=1)
+        self.assertEqual(viewer.animation_progress(state), 0.0)
+
+        state.completed_cycles = 2
+        state.frame_index = frame_count // 2
+        self.assertAlmostEqual(viewer.animation_progress(state), 0.5)
+
+        state.completed_cycles = viewer.REPEATS_PER_ANIMATION
+        self.assertEqual(viewer.animation_progress(state), 1.0)
+
     def test_frame_advance_reports_cycle_completion(self):
         state = viewer.PlaybackState()
         self.assertFalse(viewer.advance_frame(state))
@@ -93,17 +105,51 @@ class ViewerIntegrationTests(unittest.TestCase):
         with patch.object(viewer, 'clear_canvas') as clear_canvas:
             with patch.object(viewer, 'update_canvas') as update_canvas:
                 for animation in viewer.ANIMATIONS:
-                    viewer.draw_frame(sprite, animation, 0)
+                    viewer.draw_frame(sprite, animation, 0, 0.5)
 
         self.assertEqual(len(sprite.calls), len(viewer.ANIMATIONS))
         self.assertEqual(clear_canvas.call_count, len(viewer.ANIMATIONS))
         self.assertEqual(update_canvas.call_count, len(viewer.ANIMATIONS))
-        for call in sprite.calls:
+        for animation, call in zip(viewer.ANIMATIONS, sprite.calls):
             _, _, source_width, source_height, center_x, center_y, draw_width, draw_height = call
-            self.assertEqual((center_x, center_y), (viewer.CANVAS_WIDTH // 2, viewer.CANVAS_HEIGHT // 2))
+            expected_position = viewer.frame_position(animation, draw_width, draw_height, 0.5)
+            self.assertEqual((center_x, center_y), expected_position)
             self.assertLessEqual(draw_width, viewer.CANVAS_WIDTH - 2 * viewer.CANVAS_MARGIN)
             self.assertLessEqual(draw_height, viewer.CANVAS_HEIGHT - 2 * viewer.CANVAS_MARGIN)
             self.assertAlmostEqual(draw_width / draw_height, source_width / source_height, delta=0.06)
+
+    def test_moving_sequences_travel_across_the_canvas_without_clipping(self):
+        moving = [action for action in viewer.ANIMATIONS if action.movement_direction != (0, 0)]
+        self.assertEqual(len(moving), 5)
+        for animation in moving:
+            for frame in animation.frames:
+                width, height = viewer.scaled_frame_size(frame, animation.jump_arc)
+                start = viewer.frame_position(animation, width, height, 0.0)
+                end = viewer.frame_position(animation, width, height, 1.0)
+                self.assertLess(start[0], viewer.CANVAS_WIDTH // 2)
+                self.assertGreater(end[0], viewer.CANVAS_WIDTH // 2)
+                for progress in (0.0, 0.25, 0.5, 0.75, 1.0):
+                    x, y = viewer.frame_position(animation, width, height, progress)
+                    self.assertGreaterEqual(x - width // 2, viewer.CANVAS_MARGIN)
+                    self.assertLessEqual(x + (width - width // 2), viewer.CANVAS_WIDTH - viewer.CANVAS_MARGIN)
+                    self.assertGreaterEqual(y - height // 2, viewer.CANVAS_MARGIN)
+                    self.assertLessEqual(y + (height - height // 2), viewer.CANVAS_HEIGHT - viewer.CANVAS_MARGIN)
+
+    def test_jump_sequence_rises_midway_and_stationary_sequence_stays_centered(self):
+        jump = next(action for action in viewer.ANIMATIONS if action.jump_arc)
+        frame = jump.frames[0]
+        width, height = viewer.scaled_frame_size(frame, jump.jump_arc)
+        start = viewer.frame_position(jump, width, height, 0.0)
+        apex = viewer.frame_position(jump, width, height, 0.5)
+        self.assertEqual(start[1], viewer.CANVAS_HEIGHT // 2)
+        self.assertEqual(apex[1], viewer.CANVAS_HEIGHT // 2 + jump.jump_arc)
+
+        stationary = next(action for action in viewer.ANIMATIONS if action.movement_direction == (0, 0))
+        width, height = viewer.scaled_frame_size(stationary.frames[0], stationary.jump_arc)
+        self.assertEqual(
+            viewer.frame_position(stationary, width, height, 0.0),
+            (viewer.CANVAS_WIDTH // 2, viewer.CANVAS_HEIGHT // 2),
+        )
 
     def test_window_close_and_escape_are_recognized(self):
         close_event = SimpleNamespace(type=viewer.SDL_QUIT)
@@ -123,6 +169,23 @@ class ViewerIntegrationTests(unittest.TestCase):
                         viewer.main()
         open_canvas.assert_called_once_with(viewer.CANVAS_WIDTH, viewer.CANVAS_HEIGHT)
         close_canvas.assert_called_once_with()
+
+    def test_main_passes_timeline_progress_to_renderer(self):
+        with patch.object(viewer, 'open_canvas'):
+            with patch.object(viewer, 'close_canvas'):
+                with patch.object(viewer, 'load_image'):
+                    with patch.object(viewer, 'get_time', side_effect=(0.0, 0.1)):
+                        with patch.object(
+                            viewer,
+                            'get_events',
+                            side_effect=([], [SimpleNamespace(type=viewer.SDL_QUIT)]),
+                        ):
+                            with patch.object(viewer, 'draw_frame') as draw_frame:
+                                with patch.object(viewer, 'delay'):
+                                    viewer.main()
+
+        self.assertEqual(draw_frame.call_count, 1)
+        self.assertGreater(draw_frame.call_args.args[3], 0.0)
 
 
 if __name__ == '__main__':
