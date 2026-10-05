@@ -163,6 +163,14 @@ def advance_frame(state: PlaybackState) -> bool:
     return True
 
 
+def record_completed_cycle(state: PlaybackState, completed_at: float) -> bool:
+    state.completed_cycles += 1
+    if state.completed_cycles < REPEATS_PER_ANIMATION:
+        return False
+    state.wait_until = completed_at + INTER_ANIMATION_DELAY
+    return True
+
+
 def pico_frame_rect(frame: Frame) -> tuple[int, int, int, int]:
     """Convert a top-origin PNG rectangle to Pico2D's bottom-origin coordinates."""
     bottom = SHEET_HEIGHT - frame.top - frame.height
