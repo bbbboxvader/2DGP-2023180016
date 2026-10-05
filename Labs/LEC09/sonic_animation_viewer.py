@@ -160,3 +160,11 @@ def validate_frame_bounds() -> None:
                 raise ValueError(f'{animation.name} exceeds the sprite sheet width')
             if frame.top + frame.height > SHEET_HEIGHT:
                 raise ValueError(f'{animation.name} exceeds the sprite sheet height')
+
+
+def next_animation_index(current: int) -> int:
+    if not ANIMATIONS:
+        raise ValueError('at least one animation is required')
+    if not 0 <= current < len(ANIMATIONS):
+        raise IndexError('animation index is out of range')
+    return (current + 1) % len(ANIMATIONS)
