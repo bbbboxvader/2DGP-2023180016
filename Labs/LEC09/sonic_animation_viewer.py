@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from pico2d import (
     clear_canvas,
@@ -227,7 +228,7 @@ def advance_timeline(state: PlaybackState, now: float) -> bool:
     return changed
 
 
-def draw_frame(sprite_sheet: object, animation: Animation, frame_index: int) -> None:
+def draw_frame(sprite_sheet: Any, animation: Animation, frame_index: int) -> None:
     frame = animation.frames[frame_index]
     available_width = CANVAS_WIDTH - 2 * CANVAS_MARGIN
     available_height = CANVAS_HEIGHT - 2 * CANVAS_MARGIN
