@@ -13,8 +13,9 @@ class Grass:
     def update(self) :
         pass
     pass
-s
 class ball :
+    def __init__(self) :
+        self.image = load_image('ball41x41.png')
     pass
 class Boy:
     def __init__(self) :
