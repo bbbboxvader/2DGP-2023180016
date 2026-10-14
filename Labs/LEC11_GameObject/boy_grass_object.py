@@ -13,7 +13,9 @@ class Grass:
     def update(self) :
         pass
     pass
-
+s
+class ball :
+    pass
 class Boy:
     def __init__(self) :
         self.x,self.y = random.randint(100,800),90
