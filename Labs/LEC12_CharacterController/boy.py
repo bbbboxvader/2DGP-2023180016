@@ -52,6 +52,8 @@ class Boy:
                 {'trigger': 'tick', 'source': 'SLEEP', 'dest': None},
                 {'trigger': 'tick', 'source': 'RUN', 'dest': None,
                  'after': '_update_run'},
+                {'trigger': 'tick', 'source': 'AUTO_RUN', 'dest': 'IDLE',
+                 'conditions': self.auto_run.time_out},
                 {'trigger': 'tick', 'source': 'AUTO_RUN', 'dest': None,
                  'after': self.auto_run.update},
                 {'trigger': 'wake_up', 'source': 'SLEEP', 'dest': 'IDLE'},
