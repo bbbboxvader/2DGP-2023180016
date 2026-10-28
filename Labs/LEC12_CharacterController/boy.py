@@ -57,7 +57,7 @@ class Boy:
                 {'trigger': 'tick', 'source': 'AUTO_RUN', 'dest': None,
                  'after': self.auto_run.update},
                 {'trigger': 'wake_up', 'source': 'SLEEP', 'dest': 'IDLE'},
-                {'trigger': 'start_running', 'source': ['IDLE', 'SLEEP'],
+                {'trigger': 'start_running', 'source': ['IDLE', 'SLEEP', 'AUTO_RUN'],
                  'dest': 'RUN'},
                 {'trigger': 'start_running', 'source': 'RUN', 'dest': None},
                 {'trigger': 'stop_running', 'source': 'RUN', 'dest': 'IDLE'},
