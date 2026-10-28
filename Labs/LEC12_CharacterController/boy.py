@@ -1,5 +1,7 @@
-from pico2d import load_image
+from math import pi
 from time import monotonic
+
+from pico2d import load_image
 from transitions import Machine
 
 
@@ -13,10 +15,19 @@ class Boy:
         self.image = load_image('animation_sheet.png')
         self.state_machine = Machine(
             model=self,
-            states=[{'name': 'IDLE', 'on_enter': '_enter_idle'}],
+            states=[
+                {'name': 'IDLE', 'on_enter': '_enter_idle'},
+                {'name': 'SLEEP', 'on_enter': '_enter_sleep'},
+            ],
             initial='IDLE',
             auto_transitions=False,
             transitions=[
+                {
+                    'trigger': 'tick',
+                    'source': 'IDLE',
+                    'dest': 'SLEEP',
+                    'conditions': '_idle_time_expired',
+                },
                 {
                     'trigger': 'tick',
                     'source': 'IDLE',
@@ -24,14 +35,18 @@ class Boy:
                     'dest': None,
                     'after': '_animate_idle',
                 },
+                {'trigger': 'tick', 'source': 'SLEEP', 'dest': None},
             ],
         )
-
+        # Machine's initial state does not invoke on_enter callbacks.
         self._enter_idle()
 
     def _enter_idle(self):
         self.frame = 0
         self.idle_started_at = monotonic()
+
+    def _enter_sleep(self):
+        self.frame = 0
 
     def _idle_time_expired(self):
         return monotonic() - self.idle_started_at >= self.IDLE_TIMEOUT
@@ -43,7 +58,11 @@ class Boy:
         self.tick()
 
     def draw(self):
-        if self.face_dir == 1:
-            self.image.clip_draw(self.frame * 100, 300, 100, 100, self.x, self.y)
+        row = 300 if self.face_dir == 1 else 200
+        if self.is_SLEEP():
+            self.image.clip_composite_draw(
+                0, row, 100, 100, -self.face_dir * pi / 2, '',
+                self.x, self.y - 25, 100, 100,
+            )
         else:
-            self.image.clip_draw(self.frame * 100, 200, 100, 100, self.x, self.y)
+            self.image.clip_draw(self.frame * 100, row, 100, 100, self.x, self.y)
