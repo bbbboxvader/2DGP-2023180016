@@ -112,7 +112,7 @@ class Boy:
             elif self.is_RUN():
                 self.stop_running()
         elif (event.type == SDL_KEYDOWN and event.key == SDLK_a
-                and self.is_IDLE()):
+                and self.is_IDLE() and not getattr(event, 'repeat', 0)):
             self.activate_auto_run()
         elif (event.type == SDL_KEYDOWN and event.key == SDLK_SPACE
                 and self.is_SLEEP()):
