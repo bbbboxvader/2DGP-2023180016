@@ -1,8 +1,11 @@
 from pico2d import load_image
+from time import monotonic
 from transitions import Machine
 
 
 class Boy:
+    IDLE_TIMEOUT = 5.0
+
     def __init__(self):
         self.x, self.y = 400, 90
         self.frame = 0
@@ -10,7 +13,7 @@ class Boy:
         self.image = load_image('animation_sheet.png')
         self.state_machine = Machine(
             model=self,
-            states=['IDLE'],
+            states=[{'name': 'IDLE', 'on_enter': '_enter_idle'}],
             initial='IDLE',
             auto_transitions=False,
             transitions=[
@@ -23,6 +26,15 @@ class Boy:
                 },
             ],
         )
+
+        self._enter_idle()
+
+    def _enter_idle(self):
+        self.frame = 0
+        self.idle_started_at = monotonic()
+
+    def _idle_time_expired(self):
+        return monotonic() - self.idle_started_at >= self.IDLE_TIMEOUT
 
     def _animate_idle(self):
         self.frame = (self.frame + 1) % 8
