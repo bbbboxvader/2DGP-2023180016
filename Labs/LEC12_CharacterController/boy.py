@@ -17,6 +17,8 @@ class Boy:
         self.x, self.y = 400, 90
         self.frame = 0
         self.face_dir = 1
+        # The most recently pressed direction takes priority.
+        self.pressed_directions = []
         self.frame_time = 0.0
         self.image = load_image('animation_sheet.png')
         self.state_machine = Machine(
@@ -88,11 +90,16 @@ class Boy:
     def handle_event(self, event):
         if (event.type == SDL_KEYDOWN and event.key in (SDLK_LEFT, SDLK_RIGHT)
                 and not self.is_SLEEP()):
+            if event.key not in self.pressed_directions:
+                self.pressed_directions.append(event.key)
             self.face_dir = -1 if event.key == SDLK_LEFT else 1
             self.start_running()
-        elif (event.type == SDL_KEYUP and event.key in (SDLK_LEFT, SDLK_RIGHT)
-                and self.is_RUN()):
-            self.stop_running()
+        elif event.type == SDL_KEYUP and event.key in self.pressed_directions:
+            self.pressed_directions.remove(event.key)
+            if self.pressed_directions:
+                self.face_dir = -1 if self.pressed_directions[-1] == SDLK_LEFT else 1
+            elif self.is_RUN():
+                self.stop_running()
         elif (event.type == SDL_KEYDOWN and event.key == SDLK_SPACE
                 and self.is_SLEEP()):
             self.wake_up()
