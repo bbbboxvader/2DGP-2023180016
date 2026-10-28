@@ -1,12 +1,16 @@
 from math import pi
 from time import monotonic
 
-from pico2d import SDL_KEYDOWN, SDLK_SPACE, load_image
+from pico2d import (
+    SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT, SDLK_SPACE,
+    get_canvas_width, load_image,
+)
 from transitions import Machine
 
 
 class Boy:
     IDLE_TIMEOUT = 5.0
+    RUN_SPEED = 200.0  # Pixels per second.
     ANIMATION_FPS = 10.0
 
     def __init__(self):
@@ -20,6 +24,7 @@ class Boy:
             states=[
                 {'name': 'IDLE', 'on_enter': '_enter_idle'},
                 {'name': 'SLEEP', 'on_enter': '_enter_sleep'},
+                {'name': 'RUN', 'on_enter': '_enter_run'},
             ],
             initial='IDLE',
             auto_transitions=False,
@@ -35,10 +40,16 @@ class Boy:
                     'source': 'IDLE',
                     # Internal transition: animate without leaving IDLE.
                     'dest': None,
-                    'after': '_animate_idle',
+                    'after': '_animate',
                 },
                 {'trigger': 'tick', 'source': 'SLEEP', 'dest': None},
+                {'trigger': 'tick', 'source': 'RUN', 'dest': None,
+                 'after': '_update_run'},
                 {'trigger': 'wake_up', 'source': 'SLEEP', 'dest': 'IDLE'},
+                {'trigger': 'start_running', 'source': 'IDLE',
+                 'dest': 'RUN'},
+                {'trigger': 'start_running', 'source': 'RUN', 'dest': None},
+                {'trigger': 'stop_running', 'source': 'RUN', 'dest': 'IDLE'},
             ],
         )
         # Machine's initial state does not invoke on_enter callbacks.
@@ -52,11 +63,19 @@ class Boy:
     def _enter_sleep(self):
         self.frame = 0
 
+    def _enter_run(self):
+        self.frame = 0
+        self.last_update_at = monotonic()
+
     def _idle_time_expired(self):
         return monotonic() - self.idle_started_at >= self.IDLE_TIMEOUT
 
-    def _animate_idle(self):
+    def _animate(self):
         self.frame = (self.frame + self.ANIMATION_FPS * self.frame_time) % 8
+
+    def _update_run(self):
+        self._animate()
+        self.x += self.face_dir * self.RUN_SPEED * self.frame_time
 
     def update(self):
         now = monotonic()
@@ -65,7 +84,14 @@ class Boy:
         self.tick()
 
     def handle_event(self, event):
-        if (event.type == SDL_KEYDOWN and event.key == SDLK_SPACE
+        if (event.type == SDL_KEYDOWN and event.key in (SDLK_LEFT, SDLK_RIGHT)
+                and not self.is_SLEEP()):
+            self.face_dir = -1 if event.key == SDLK_LEFT else 1
+            self.start_running()
+        elif (event.type == SDL_KEYUP and event.key in (SDLK_LEFT, SDLK_RIGHT)
+                and self.is_RUN()):
+            self.stop_running()
+        elif (event.type == SDL_KEYDOWN and event.key == SDLK_SPACE
                 and self.is_SLEEP()):
             self.wake_up()
 
@@ -76,5 +102,8 @@ class Boy:
                 0, row, 100, 100, -self.face_dir * pi / 2, '',
                 self.x, self.y - 25, 100, 100,
             )
+        elif self.is_RUN():
+            row = 100 if self.face_dir == 1 else 0
+            self.image.clip_draw(int(self.frame) * 100, row, 100, 100, self.x, self.y)
         else:
             self.image.clip_draw(int(self.frame) * 100, row, 100, 100, self.x, self.y)
