@@ -40,6 +40,9 @@ class AutoRun:
         if self.boy.x >= right:
             self.boy.x = right
             self.boy.face_dir = -1
+        elif self.boy.x <= left:
+            self.boy.x = left
+            self.boy.face_dir = 1
 
     def draw(self):
         row = 100 if self.boy.face_dir == 1 else 0
