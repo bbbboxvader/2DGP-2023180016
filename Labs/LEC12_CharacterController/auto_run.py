@@ -1,5 +1,7 @@
 from time import monotonic
 
+from pico2d import get_canvas_width
+
 
 class AutoRun:
     DURATION = 5.0
@@ -10,11 +12,17 @@ class AutoRun:
         self.boy = boy
         self.started_at = None
 
+    def _bounds(self):
+        half_size = self.SIZE / 2
+        return half_size, get_canvas_width() - half_size
+
     def enter(self):
         self.started_at = monotonic()
         self.boy.last_update_at = self.started_at
         self.boy.frame = 0
         self.boy.pressed_directions.clear()
+        left, right = self._bounds()
+        self.boy.x = max(left, min(right, self.boy.x))
 
     def exit(self):
         self.started_at = None
