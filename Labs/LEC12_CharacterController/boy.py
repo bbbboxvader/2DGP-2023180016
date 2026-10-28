@@ -7,11 +7,13 @@ from transitions import Machine
 
 class Boy:
     IDLE_TIMEOUT = 5.0
+    ANIMATION_FPS = 10.0
 
     def __init__(self):
         self.x, self.y = 400, 90
         self.frame = 0
         self.face_dir = 1
+        self.frame_time = 0.0
         self.image = load_image('animation_sheet.png')
         self.state_machine = Machine(
             model=self,
@@ -45,6 +47,7 @@ class Boy:
     def _enter_idle(self):
         self.frame = 0
         self.idle_started_at = monotonic()
+        self.last_update_at = self.idle_started_at
 
     def _enter_sleep(self):
         self.frame = 0
@@ -53,9 +56,12 @@ class Boy:
         return monotonic() - self.idle_started_at >= self.IDLE_TIMEOUT
 
     def _animate_idle(self):
-        self.frame = (self.frame + 1) % 8
+        self.frame = (self.frame + self.ANIMATION_FPS * self.frame_time) % 8
 
     def update(self):
+        now = monotonic()
+        self.frame_time = max(0.0, now - self.last_update_at)
+        self.last_update_at = now
         self.tick()
 
     def handle_event(self, event):
@@ -71,4 +77,4 @@ class Boy:
                 self.x, self.y - 25, 100, 100,
             )
         else:
-            self.image.clip_draw(self.frame * 100, row, 100, 100, self.x, self.y)
+            self.image.clip_draw(int(self.frame) * 100, row, 100, 100, self.x, self.y)
