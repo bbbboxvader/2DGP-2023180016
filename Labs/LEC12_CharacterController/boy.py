@@ -1,4 +1,5 @@
 from pico2d import load_image
+from transitions import Machine
 
 
 class Boy:
@@ -7,9 +8,27 @@ class Boy:
         self.frame = 0
         self.face_dir = 1
         self.image = load_image('animation_sheet.png')
+        self.state_machine = Machine(
+            model=self,
+            states=['IDLE'],
+            initial='IDLE',
+            auto_transitions=False,
+            transitions=[
+                {
+                    'trigger': 'tick',
+                    'source': 'IDLE',
+                    # Internal transition: animate without leaving IDLE.
+                    'dest': None,
+                    'after': '_animate_idle',
+                },
+            ],
+        )
+
+    def _animate_idle(self):
+        self.frame = (self.frame + 1) % 8
 
     def update(self):
-        self.frame = (self.frame + 1) % 8
+        self.tick()
 
     def draw(self):
         if self.face_dir == 1:
