@@ -34,15 +34,24 @@ class AutoRun:
 
     def update(self):
         self.boy._animate()
-        self.boy.x += (self.boy.face_dir * self.boy.RUN_SPEED
-                       * self.SPEED_MULTIPLIER * self.boy.frame_time)
         left, right = self._bounds()
-        if self.boy.x >= right:
-            self.boy.x = right
-            self.boy.face_dir = -1
-        elif self.boy.x <= left:
-            self.boy.x = left
+        span = right - left
+        if span <= 0:
+            self.boy.x = get_canvas_width() / 2
+            return
+
+        # Fold the travelled distance between the two screen edges. This also
+        # preserves overshoot if a slow frame crosses more than one edge.
+        offset = self.boy.x - left
+        phase = offset if self.boy.face_dir == 1 else 2 * span - offset
+        distance = self.boy.RUN_SPEED * self.SPEED_MULTIPLIER * self.boy.frame_time
+        phase = (phase + distance) % (2 * span)
+        if phase < span:
+            self.boy.x = left + phase
             self.boy.face_dir = 1
+        else:
+            self.boy.x = right - (phase - span)
+            self.boy.face_dir = -1
 
     def draw(self):
         row = 100 if self.boy.face_dir == 1 else 0
