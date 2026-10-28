@@ -4,7 +4,7 @@ from time import monotonic
 class AutoRun:
     DURATION = 5.0
     SPEED_MULTIPLIER = 2.0
-    SIZE = 100
+    SIZE = 150
 
     def __init__(self, boy):
         self.boy = boy
@@ -31,7 +31,9 @@ class AutoRun:
 
     def draw(self):
         row = 100 if self.boy.face_dir == 1 else 0
+        # Raise the center as the sprite grows, keeping its bottom on the grass.
+        center_y = self.boy.y + (self.SIZE - 100) / 2
         self.boy.image.clip_draw(
             int(self.boy.frame) * 100, row, 100, 100,
-            self.boy.x, self.boy.y,
+            self.boy.x, center_y, self.SIZE, self.SIZE,
         )
