@@ -48,7 +48,7 @@ class Boy:
                 {'trigger': 'tick', 'source': 'RUN', 'dest': None,
                  'after': '_update_run'},
                 {'trigger': 'wake_up', 'source': 'SLEEP', 'dest': 'IDLE'},
-                {'trigger': 'start_running', 'source': 'IDLE',
+                {'trigger': 'start_running', 'source': ['IDLE', 'SLEEP'],
                  'dest': 'RUN'},
                 {'trigger': 'start_running', 'source': 'RUN', 'dest': None},
                 {'trigger': 'stop_running', 'source': 'RUN', 'dest': 'IDLE'},
@@ -88,8 +88,7 @@ class Boy:
         self.tick()
 
     def handle_event(self, event):
-        if (event.type == SDL_KEYDOWN and event.key in (SDLK_LEFT, SDLK_RIGHT)
-                and not self.is_SLEEP()):
+        if event.type == SDL_KEYDOWN and event.key in (SDLK_LEFT, SDLK_RIGHT):
             # Ignore OS key-repeat events, preserving the latest direction.
             if event.key in self.pressed_directions:
                 return
