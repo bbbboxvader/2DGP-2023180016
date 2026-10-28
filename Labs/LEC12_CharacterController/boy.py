@@ -76,6 +76,8 @@ class Boy:
     def _update_run(self):
         self._animate()
         self.x += self.face_dir * self.RUN_SPEED * self.frame_time
+        # Keep the entire 100-pixel sprite inside the canvas.
+        self.x = max(50, min(get_canvas_width() - 50, self.x))
 
     def update(self):
         now = monotonic()
