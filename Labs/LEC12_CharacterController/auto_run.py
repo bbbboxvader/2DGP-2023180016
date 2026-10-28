@@ -36,6 +36,10 @@ class AutoRun:
         self.boy._animate()
         self.boy.x += (self.boy.face_dir * self.boy.RUN_SPEED
                        * self.SPEED_MULTIPLIER * self.boy.frame_time)
+        left, right = self._bounds()
+        if self.boy.x >= right:
+            self.boy.x = right
+            self.boy.face_dir = -1
 
     def draw(self):
         row = 100 if self.boy.face_dir == 1 else 0
