@@ -90,8 +90,10 @@ class Boy:
     def handle_event(self, event):
         if (event.type == SDL_KEYDOWN and event.key in (SDLK_LEFT, SDLK_RIGHT)
                 and not self.is_SLEEP()):
-            if event.key not in self.pressed_directions:
-                self.pressed_directions.append(event.key)
+            # Ignore OS key-repeat events, preserving the latest direction.
+            if event.key in self.pressed_directions:
+                return
+            self.pressed_directions.append(event.key)
             self.face_dir = -1 if event.key == SDLK_LEFT else 1
             self.start_running()
         elif event.type == SDL_KEYUP and event.key in self.pressed_directions:
