@@ -1,7 +1,7 @@
 from math import pi
 from time import monotonic
 
-from pico2d import load_image
+from pico2d import SDL_KEYDOWN, SDLK_SPACE, load_image
 from transitions import Machine
 
 
@@ -36,6 +36,7 @@ class Boy:
                     'after': '_animate_idle',
                 },
                 {'trigger': 'tick', 'source': 'SLEEP', 'dest': None},
+                {'trigger': 'wake_up', 'source': 'SLEEP', 'dest': 'IDLE'},
             ],
         )
         # Machine's initial state does not invoke on_enter callbacks.
@@ -56,6 +57,11 @@ class Boy:
 
     def update(self):
         self.tick()
+
+    def handle_event(self, event):
+        if (event.type == SDL_KEYDOWN and event.key == SDLK_SPACE
+                and self.is_SLEEP()):
+            self.wake_up()
 
     def draw(self):
         row = 300 if self.face_dir == 1 else 200
