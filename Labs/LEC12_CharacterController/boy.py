@@ -2,10 +2,12 @@ from math import pi
 from time import monotonic
 
 from pico2d import (
-    SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT, SDLK_SPACE,
+    SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT, SDLK_SPACE, SDLK_a,
     get_canvas_width, load_image,
 )
 from transitions import Machine
+
+from auto_run import AutoRun
 
 
 class Boy:
@@ -21,12 +23,15 @@ class Boy:
         self.pressed_directions = []
         self.frame_time = 0.0
         self.image = load_image('animation_sheet.png')
+        self.auto_run = AutoRun(self)
         self.state_machine = Machine(
             model=self,
             states=[
                 {'name': 'IDLE', 'on_enter': '_enter_idle'},
                 {'name': 'SLEEP', 'on_enter': '_enter_sleep'},
                 {'name': 'RUN', 'on_enter': '_enter_run'},
+                {'name': 'AUTO_RUN', 'on_enter': self.auto_run.enter,
+                 'on_exit': self.auto_run.exit},
             ],
             initial='IDLE',
             auto_transitions=False,
@@ -47,11 +52,14 @@ class Boy:
                 {'trigger': 'tick', 'source': 'SLEEP', 'dest': None},
                 {'trigger': 'tick', 'source': 'RUN', 'dest': None,
                  'after': '_update_run'},
+                {'trigger': 'tick', 'source': 'AUTO_RUN', 'dest': None,
+                 'after': self.auto_run.update},
                 {'trigger': 'wake_up', 'source': 'SLEEP', 'dest': 'IDLE'},
                 {'trigger': 'start_running', 'source': ['IDLE', 'SLEEP'],
                  'dest': 'RUN'},
                 {'trigger': 'start_running', 'source': 'RUN', 'dest': None},
                 {'trigger': 'stop_running', 'source': 'RUN', 'dest': 'IDLE'},
+                {'trigger': 'activate_auto_run', 'source': 'IDLE', 'dest': 'AUTO_RUN'},
             ],
         )
         # Machine's initial state does not invoke on_enter callbacks.
@@ -101,13 +109,18 @@ class Boy:
                 self.face_dir = -1 if self.pressed_directions[-1] == SDLK_LEFT else 1
             elif self.is_RUN():
                 self.stop_running()
+        elif (event.type == SDL_KEYDOWN and event.key == SDLK_a
+                and self.is_IDLE()):
+            self.activate_auto_run()
         elif (event.type == SDL_KEYDOWN and event.key == SDLK_SPACE
                 and self.is_SLEEP()):
             self.wake_up()
 
     def draw(self):
         row = 300 if self.face_dir == 1 else 200
-        if self.is_SLEEP():
+        if self.is_AUTO_RUN():
+            self.auto_run.draw()
+        elif self.is_SLEEP():
             self.image.clip_composite_draw(
                 0, row, 100, 100, -self.face_dir * pi / 2, '',
                 self.x, self.y - 25, 100, 100,
