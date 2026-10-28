@@ -3,7 +3,7 @@ from time import monotonic
 
 class AutoRun:
     DURATION = 5.0
-    SPEED_MULTIPLIER = 1.0
+    SPEED_MULTIPLIER = 2.0
     SIZE = 100
 
     def __init__(self, boy):
@@ -25,7 +25,9 @@ class AutoRun:
                 and monotonic() - self.started_at >= self.DURATION)
 
     def update(self):
-        self.boy._update_run()
+        self.boy._animate()
+        self.boy.x += (self.boy.face_dir * self.boy.RUN_SPEED
+                       * self.SPEED_MULTIPLIER * self.boy.frame_time)
 
     def draw(self):
         row = 100 if self.boy.face_dir == 1 else 0
